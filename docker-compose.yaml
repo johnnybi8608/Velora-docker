@@ -253,14 +253,14 @@ services:
     networks:
       - openim
 
-  openim-web-front:
-    image: ${OPENIM_WEB_FRONT_IMAGE}
-    container_name: openim-web-front
-    restart: always
+  openim-admin-front:
+    image: ${OPENIM_ADMIN_FRONT_IMAGE}
+    container_name: openim-admin-front
+    restart: unless-stopped
     ports:
-      - "${OPENIM_WEB_FRONT_PORT}:80"
-    networks:
-      - openim
+      - "${OPENIM_ADMIN_FRONT_PORT}:80"
+    depends_on:
+      - openim-chat
 
   # openim-admin-front:
   #   image: ${OPENIM_ADMIN_FRONT_IMAGE}
