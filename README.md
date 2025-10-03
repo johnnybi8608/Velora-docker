@@ -1,59 +1,30 @@
-# OpenIM Docker Usage Instructions 📘
+# 更新 & 依赖
+sudo apt-get update
+sudo apt-get install -y ca-certificates curl gnupg lsb-release
 
-> **Documentation Resources** 📚
+# 添加 Docker 官方源
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
+| sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-+ [Official Deployment Guide](https://docs.openim.io/guides/gettingstarted/dockercompose)
+# 安装 Docker Engine + buildx + compose 插件
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-## :busts_in_silhouette: Community
+# 验证
+sudo docker --version
+sudo docker compose version
 
-+ 💬 [Follow us on Twitter](https://twitter.com/founder_im63606)
-+ 🚀 [Join our Slack channel](https://join.slack.com/t/openimsdk/shared_invite/zt-22720d66b-o_FvKxMTGXtcnnnHiMqe9Q)
-+ :eyes: [Join our WeChat Group](https://openim-1253691595.cos.ap-nanjing.myqcloud.com/WechatIMG20.jpeg)
 
-## Environment Preparation 🌍
+git clone https://github.com/johnnybi8608/Velora-docker.git
+cd Velora-docker
 
-- Install Docker with the Compose plugin or docker-compose on your server. For installation details, visit [Docker Compose Installation Guide](https://docs.docker.com/compose/install/linux/).
+sed -i.bak 's|192\.168\.1\.138|172.245.67.138|g' .env
 
-## Repository Cloning 🗂️
+# 验证
+grep -E 'MINIO_EXTERNAL_ADDRESS|GRAFANA_URL' .env
 
-```bash
-git clone https://github.com/openimsdk/openim-docker
-```
-
-## Configuration Modification 🔧
-
-- Modify the `.env` file to configure the external IP. If using a domain name, Nginx configuration is required.
-
-  ```plaintext
-  # Set the external access address (IP or domain) for MinIO service
-  MINIO_EXTERNAL_ADDRESS="http://external_ip:10005"
-  ```
-
-- For other configurations, please refer to the comments in the .env file
-
-## Service Launch 🚀
-
-- To start the service:
-
-```bash
+# 运行
 docker compose up -d
-```
-
-- To stop the service:
-
-```bash
-docker compose down
-```
-
-- To view logs:
-
-```bash
-docker logs -f openim-server
-docker logs -f openim-chat
-```
-
-## Quick Experience ⚡
-
-For a quick experience with OpenIM services, please visit the [Quick Test Server Guide](https://docs.openim.io/guides/gettingStarted/quickTestServer).
-```
-
