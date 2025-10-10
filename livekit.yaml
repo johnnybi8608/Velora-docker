@@ -1,0 +1,21 @@
+# === minimal, known-good livekit.yaml ===
+port: 7880
+
+rtc:
+  tcp_port: 7881
+  port_range_start: 55000
+  port_range_end: 55100
+  use_external_ip: true
+
+redis:
+  address: "redis:6379"
+  password: "openIM123"
+  db: 0
+
+turn:
+  enabled: true
+  domain: "livekit-turn.birsage.ocdev.org"
+  udp_port: 3478
+
+keys:
+  LK_API_KEY_REPLACE_ME_9f1c1f4b-3b6d-4a60-9b6a-8d2b4f6a6a77: LK_API_SECRET_REPLACE_ME_2a1e7b93-5b8f-4c6d-9a1e-77d2b0c41b12
