@@ -15,6 +15,12 @@ https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_C
 # 安装 Docker Engine + buildx + compose 插件
 sudo apt-get update
 
+# 如果卡锁
+sudo systemctl stop unattended-upgrades && sudo kill 8879
+sudo dpkg --configure -a
+
+# 继续
+
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 # 验证
@@ -53,3 +59,266 @@ docker compose up -d
 curl -I http://127.0.0.1:7880     # 返回 200/401/404 都行
 nc -vz 127.0.0.1 7881             # succeeded 即 OK
 docker logs --tail=40 livekit     # 看到 "starting LiveKit server" 即 OK
+
+
+# 配置Nginx
+sudo apt install -y certbot python3-certbot-nginx
+
+# 释放80端口
+sudo fuser -k 80/tcp || true
+sudo ss -ltnp | grep :80 || echo "port 80 is free"
+
+sudo certbot certonly --standalone -d birsage.ocdev.org --agree-tos -m your@email.com --no-eff-email
+
+sudo apt install -y nginx
+sudo systemctl enable --now nginx
+
+sudo nano /etc/nginx/conf.d/openim.conf
+
+# 写配置文件
+
+# ---------------------- upstream（与官方一致） ----------------------
+# open-im-server / chat 对应的服务端口（按你的实际映射，如有不同改端口即可）
+upstream msg_gateway{
+    # IM 消息网关（WS）
+    server 127.0.0.1:10001;
+}
+upstream im_api{
+    # IM Group/User API
+    server 127.0.0.1:10002;
+}
+upstream im_chat_api{
+    # 业务/登录注册等
+    server 127.0.0.1:10008;
+}
+upstream im_admin_api{
+    # 管理 API
+    server 127.0.0.1:10009;
+}
+upstream minio_s3_2{
+    # MinIO
+    server 127.0.0.1:10005;
+}
+upstream pc_web{
+    # PC Web（如果未部署，可以先保留；访问会返回 502/404）
+    server 127.0.0.1:11001;
+}
+upstream openim_admin{
+    # Admin Web
+    server 127.0.0.1:11002;
+}
+
+# ---------------------- IM Web：birsage.ocdev.org ----------------------
+server {
+    listen       443 ssl http2;
+    server_name  birsage.ocdev.org;
+
+    # 证书（Let’s Encrypt）
+    ssl_certificate     /etc/letsencrypt/live/birsage.ocdev.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/birsage.ocdev.org/privkey.pem;
+
+    gzip on;
+    gzip_min_length 1k;
+    gzip_buffers 4 16k;
+    gzip_comp_level 2;
+    gzip_types text/plain application/javascript application/x-javascript text/css application/xml text/javascript application/x-httpd-php image/jpeg image/gif image/png application/wasm;
+    gzip_vary off;
+    gzip_disable "MSIE [1-6]\\.";
+
+    default_type application/wasm;
+
+    # Web 根（pc_web）
+    location / {
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header X-real-ip $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_pass http://pc_web/;
+    }
+
+    # WebSocket（消息网关）
+    location /msg_gateway{
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header X-real-ip $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_pass http://msg_gateway/;
+    }
+
+    # OpenIM API
+    location ^~/api/{
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header X-real-ip $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Request-Api $scheme://$host/api;
+        proxy_pass http://im_api/;
+    }
+
+    # Chat API
+    location ^~/chat/{
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header X-real-ip $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_pass http://im_chat_api/;
+    }
+
+    # MinIO 代理
+    location ^~/im-minio-api/ {
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 300;
+
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        chunked_transfer_encoding off;
+        proxy_pass http://minio_s3_2/;
+    }
+
+    # RTC（如启用）
+    location ^~/im_open_rtc/ {
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header X-real-ip $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_pass http://127.0.0.1:17880;
+    }
+}
+
+# ---------------------- Admin Web：admin.birsage.ocdev.org ----------------------
+server {
+    listen       443 ssl http2;
+    server_name  admin.birsage.ocdev.org;
+
+    # 证书（Let’s Encrypt，给 admin 子域单独签一张）
+    ssl_certificate     /etc/letsencrypt/live/admin.birsage.ocdev.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/admin.birsage.ocdev.org/privkey.pem;
+
+    gzip on;
+    gzip_min_length 1k;
+    gzip_buffers 4 16k;
+    gzip_comp_level 2;
+    gzip_types text/plain application/javascript application/x-javascript text/css application/xml text/javascript application/x-httpd-php image/jpeg image/gif image/png application/wasm;
+    gzip_vary off;
+    gzip_disable "MSIE [1-6]\\.";
+
+    default_type application/wasm;
+
+    # Admin 根
+    location / {
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header X-real-ip $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_pass http://openim_admin/;
+    }
+
+    location /msg_gateway{
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header X-real-ip $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_pass http://msg_gateway/;
+    }
+
+    location ^~/api/{
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header X-real-ip $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Request-Api $scheme://$host/api;
+        proxy_pass http://im_api/;
+    }
+
+    location ^~/chat/{
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header X-real-ip $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_pass http://im_chat_api/;
+    }
+
+    location ^~/complete_admin/{
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_set_header X-real-ip $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_pass http://im_admin_api/;
+    }
+}
+
+# ---------------------- HTTP -> HTTPS 跳转 ----------------------
+server {
+    listen 80;
+    server_name birsage.ocdev.org admin.birsage.ocdev.org;
+    return 301 https://$host$request_uri;
+}
+
+
+
+
+# 给admin域名申请证书
+
+sudo systemctl stop nginx
+
+sudo certbot certonly --standalone \
+  -d admin.birsage.ocdev.org \
+  -m johnnybi.dev@gmail.com --agree-tos --no-eff-email
+
+
+sudo systemctl start nginx
+
+sudo systemctl status nginx
+
+docker exec -it openim-server sh
+
+vi /openim-server/config/config.yaml
+
+# 编辑文件
+object:
+  enable: "minio"
+  apiURL: "https://birsage.ocdev.org/api"
+
+  minio:
+    bucket: "openim"
+    endpoint: "http://127.0.0.1:10005"
+    accessKeyID: "root"
+    secretAccessKey: "openIM123"
+    sessionToken: ""
+
+  signEndpoint: "https://birsage.ocdev.org/im-minio-api"
+
+
+# 修改minio
+docker exec -it openim-server sh -lc \
+"sed -i 's#^internalAddress:.*#internalAddress: 127.0.0.1:10005#; s#^externalAddress:.*#externalAddress: https://birsage.ocdev.org/im-minio-api#' /openim-server/config/minio.yml && grep -nE 'internalAddress|externalAddress' /openim-server/config/minio.yml"
+
+sudo sed -i 's#^MINIO_EXTERNAL_ADDRESS=.*#MINIO_EXTERNAL_ADDRESS="https://birsage.ocdev.org/im-minio-api"#' .env
+
+
+
+# 重启
+exit
+docker restart openim-server
+docker restart openim-chat
+
+
+# 测试
+sudo nginx -t
+
+sudo systemctl reload nginx
+
+curl -I https://birsage.ocdev.org
