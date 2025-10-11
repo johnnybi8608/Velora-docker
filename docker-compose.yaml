@@ -43,9 +43,6 @@ services:
       - MONGO_INITDB_DATABASE=openim_v3
       - MONGO_OPENIM_USERNAME=${MONGO_USERNAME}
       - MONGO_OPENIM_PASSWORD=${MONGO_PASSWORD}
-      - CHATENV_CHAT_RPC_CHAT_LIVEKIT_URL=${LIVEKIT_URL:-ws://livekit:7880}
-      - CHATENV_CHAT_RPC_CHAT_LIVEKIT_APIKEY=${LIVEKIT_API_KEY:-LK_API_KEY_REPLACE_ME_9f1c1f4b-3b6d-4a60-9b6a-8d2b4f6a6a77}
-      - CHATENV_CHAT_RPC_CHAT_LIVEKIT_APISECRET=${LIVEKIT_API_SECRET:-LK_API_SECRET_REPLACE_ME_2a1e7b93-5b8f-4c6d-9a1e-77d2b0c41b12}
       
     restart: always
     networks:
@@ -405,6 +402,10 @@ services:
       - CHATENV_SHARE_OPENIM_APIURL=${API_URL}
       - CHATENV_LOG_ISSTDOUT=${LOG_IS_STDOUT}
       - CHATENV_LOG_REMAINLOGLEVEL=${LOG_LEVEL}
+      - CHATENV_CHAT_RPC_CHAT_LIVEKIT_URL=${LIVEKIT_URL:-ws://livekit:7880}
+      - CHATENV_CHAT_RPC_CHAT_LIVEKIT_APIKEY=${LIVEKIT_API_KEY:-LK_API_KEY_REPLACE_ME_9f1c1f4b-3b6d-4a60-9b6a-8d2b4f6a6a77}
+      - CHATENV_CHAT_RPC_CHAT_LIVEKIT_APISECRET=${LIVEKIT_API_SECRET:-LK_API_SECRET_REPLACE_ME_2a1e7b93-5b8f-4c6d-9a1e-77d2b0c41b12}
+      
     ports:
       - "${CHAT_API_PORT}:10008"
       - "${ADMIN_API_PORT}:10009"
@@ -422,7 +423,13 @@ services:
     image: livekit/livekit-server:latest
     container_name: livekit
     restart: unless-stopped
-    command: ["--config", "/etc/livekit/livekit.yaml"]
+    command:
+      - "--config"
+      - "/etc/livekit/livekit.yaml"
+      - "--bind"
+      - "0.0.0.0"
+      - "--node-ip"
+      - "107.173.111.187"
     volumes:
       - ./livekit.yaml:/etc/livekit/livekit.yaml:ro
     depends_on:
