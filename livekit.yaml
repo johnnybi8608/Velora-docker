@@ -14,7 +14,7 @@ redis:
 
 turn:
   enabled: true
-  domain: "livekit-turn.birsage.ocdev.org"
+  domain: "livekit-turn.velora.velora.com"
   udp_port: 3478
 
 keys:
