@@ -1,16 +1,16 @@
 # 服务器核心内容采用OpenIM开源项目,感谢OpenIM团队的无私奉献
 
-# 准备域名 
+# 第一步准备域名 
 主域名: 如 velora.velora.com
 管理后台域名: 如 admin.velora.velora.com
 通话服务域名: 如 livekit.velora.velora.com
 通话服务turn域名: 如 livekit-turn.velora.velora.com
 
-# 服务器docker已经涵盖了所有功能,如果全部功能都是用服务器docker,上面四个域名可以全部指向服务器ip
+服务器docker已经涵盖了所有功能,如果全部功能都是用服务器docker,上面四个域名可以全部指向服务器ip
 
-# 另外准备一个域名,指向你的网站,网站可以在App聊天页面顶部导航栏-指南针图标处访问,域名格式为 explore.主域名, 例如 explore.velora.velora.com
+另外准备一个域名,指向你的网站,网站可以在App聊天页面顶部导航栏-指南针图标处访问,域名格式为 explore.主域名, 例如 explore.velora.velora.com
 
-# 第一步: 安装docker
+# 第二步: 安装docker
 
 # 更新 & 依赖
 sudo apt-get update
@@ -36,7 +36,7 @@ sudo docker --version
 
 sudo docker compose version
 
-# 第二步: 拉取Velora仓库
+# 第三步: 拉取Velora仓库
 
 git clone https://github.com/johnnybi8608/Velora-docker.git
 
@@ -53,7 +53,7 @@ docker compose up -d
 
 # 浏览器输入 http://服务器ip:11002 (⚠️注意是http不是https) 预期可以看到后台欢迎页面但是无法登录
 
-# 第三步: 部署LiveKit
+# 第四步: 部署LiveKit
 
 docker run --rm livekit/livekit-server generate-keys
 
@@ -84,7 +84,7 @@ sed -i 's#  LK_API_KEY_REPLACE_ME_9f1c1f4b-3b6d-4a60-9b6a-8d2b4f6a6a77: LK_API_S
 
 curl -I http://127.0.0.1:7880
 
-# 第四步 配置Nginx
+# 第五步 配置Nginx
 
 # 安装Nginx cerbot
 sudo apt-get install -y nginx certbot python3-certbot-nginx
@@ -294,7 +294,7 @@ sudo nginx -t
 # 删除默认配置(可选)
 sudo rm /etc/nginx/sites-enabled/default
 
-# 第五步 配置Minio 
+# 第六步 配置Minio 
 
 # 启动docker
 docker compose up -d
@@ -305,6 +305,7 @@ docker compose exec openim-server sh -lc \
 
 sed -i 's#^MINIO_EXTERNAL_ADDRESS=.*#MINIO_EXTERNAL_ADDRESS="https://velora.velora.com/im-minio-api"#' .env
 
+# 第七步 启动系统
 
 # 重新启动docker
 docker compose down
@@ -313,8 +314,8 @@ docker compose up -d
 # 启动Nginx
 sudo systemctl restart nginx
 
-#查看Nginx状态
+# 查看Nginx状态
 sudo systemctl status nginx
 
-# 到这里,浏览器输入 https://admin.velora.velora.com 预期可以看到后台欢迎页面
-# 默认管理员账号密码均为 chatAdmin,登录后请立即修改密码
+到这里,浏览器输入 https://admin.velora.velora.com 预期可以看到后台欢迎页面
+默认管理员账号密码均为 chatAdmin,登录后请立即修改密码
