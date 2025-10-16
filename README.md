@@ -1,6 +1,6 @@
 # 服务器核心内容采用OpenIM开源项目,感谢OpenIM团队的无私奉献
 
-# 第一步准备域名 
+# 第一步: 准备域名 
 主域名: 如 velora.velora.com
 管理后台域名: 如 admin.velora.velora.com
 通话服务域名: 如 livekit.velora.velora.com
@@ -84,7 +84,7 @@ sed -i 's#  LK_API_KEY_REPLACE_ME_9f1c1f4b-3b6d-4a60-9b6a-8d2b4f6a6a77: LK_API_S
 
 curl -I http://127.0.0.1:7880
 
-# 第五步 配置Nginx
+# 第五步: 配置Nginx
 
 # 安装Nginx cerbot
 sudo apt-get install -y nginx certbot python3-certbot-nginx
@@ -294,7 +294,7 @@ sudo nginx -t
 # 删除默认配置(可选)
 sudo rm /etc/nginx/sites-enabled/default
 
-# 第六步 配置Minio 
+# 第六步: 配置Minio 
 
 # 启动docker
 docker compose up -d
@@ -305,7 +305,7 @@ docker compose exec openim-server sh -lc \
 
 sed -i 's#^MINIO_EXTERNAL_ADDRESS=.*#MINIO_EXTERNAL_ADDRESS="https://velora.velora.com/im-minio-api"#' .env
 
-# 第七步 启动系统
+# 第七步: 启动系统
 
 # 重新启动docker
 docker compose down
