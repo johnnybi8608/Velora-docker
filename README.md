@@ -1,6 +1,18 @@
-## 服务器核心内容采用OpenIM开源项目,感谢OpenIM团队的无私奉献
+# Velora-docker
+
+## 开源声明
+
+本项目基于 [OpenIM Server](https://github.com/openimsdk/open-im-server) 进行开发和修改。
+
+- 原项目: OpenIM Server
+- 原项目许可证: Apache License 2.0
+- 原项目地址: https://github.com/openimsdk/open-im-server
+
+感谢 OpenIM 团队的开源贡献!
 
 ---
+
+## 部署指南
 
 ## 第一步: 准备域名
 
