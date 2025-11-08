@@ -429,7 +429,7 @@ services:
       - "--bind"
       - "0.0.0.0"
       - "--node-ip"
-      - "107.173.111.187"
+      - "127.0.0.1"
     volumes:
       - ./livekit.yaml:/etc/livekit/livekit.yaml:ro
     depends_on:
