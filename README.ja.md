@@ -2,45 +2,45 @@
 
 [English](README.md) | [Español](README.es.md) | [日本語](README.ja.md) | [简体中文](README.zh-CN.md) | [Português](README.pt.md)
 
-## Open Source Notice
+## オープンソース告知
 
-This project is developed on top of [OpenIM Server](https://github.com/openimsdk/open-im-server).
+本プロジェクトは [OpenIM Server](https://github.com/openimsdk/open-im-server) をベースに開発・改造しています。
 
-- Upstream project: OpenIM Server
-- Upstream license: Apache License 2.0
-- Upstream repository: https://github.com/openimsdk/open-im-server
+- 元プロジェクト: OpenIM Server
+- ライセンス: Apache License 2.0
+- リポジトリ: https://github.com/openimsdk/open-im-server
 
-Thanks to the OpenIM team for their open-source contribution!
-
----
-
-## Deployment Guide
-
-Recommended server: Ubuntu 22.04 with at least 3.5 GB RAM.
-
-## Step 1: Prepare Domains
-
-- Primary domain: e.g., velora.velora.com
-- Admin console domain: e.g., admin.velora.velora.com
-- Calling service domain: e.g., livekit.velora.velora.com
-- Calling service TURN domain: e.g., livekit-turn.velora.velora.com
-
-If you deploy every component with this Docker stack, point all four domains to the same server IP.
-
-Prepare an extra domain for your web site (the compass icon inside the chat list opens it). Use the format `explore.<primary-domain>`, for example `explore.velora.velora.com`.
+OpenIM チームの貢献に感謝します。
 
 ---
 
-## Step 2: Install Docker
+## デプロイ手順
 
-### Update the system & install dependencies
+推奨サーバー: Ubuntu 22.04 / メモリ 3.5 GB 以上。
+
+## 手順 1: ドメインの準備
+
+- メインドメイン: 例 `velora.velora.com`
+- 管理画面ドメイン: 例 `admin.velora.velora.com`
+- 通話サービスドメイン: 例 `livekit.velora.velora.com`
+- 通話 TURN ドメイン: 例 `livekit-turn.velora.velora.com`
+
+すべてをこの Docker スタックで動かす場合、4 つのドメインは同じサーバー IP を指して構いません。
+
+アプリ上部のコンパスから開く Web 用に `explore.<メインドメイン>` 形式の追加ドメインも用意してください (例 `explore.velora.velora.com`)。
+
+---
+
+## 手順 2: Docker をインストール
+
+### システム更新と依存パッケージ
 
 ```bash
 sudo apt-get update
 sudo apt-get install -y ca-certificates curl gnupg lsb-release
 ```
 
-### Add the Docker official repository
+### Docker 公式リポジトリを追加
 
 ```bash
 sudo install -m 0755 -d /etc/apt/keyrings
@@ -52,14 +52,14 @@ https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_C
 | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 ```
 
-### Install Docker Engine + buildx + compose plugin
+### Docker Engine + buildx + compose プラグインをインストール
 
 ```bash
 sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
-### Verify
+### 動作確認
 
 ```bash
 sudo docker --version
@@ -68,42 +68,42 @@ sudo docker compose version
 
 ---
 
-## Step 3: Clone the Velora repository
+## 手順 3: Velora リポジトリを取得
 
 ```bash
 git clone https://github.com/johnnybi8608/Velora-docker.git
 cd Velora-docker
 ```
 
-### Replace `127.0.0.1` in `.env` with the server public IP (for example `107.210.218.187`)
+### `.env` 内の `127.0.0.1` をサーバーのグローバル IP (例 `107.210.218.187`) に置換
 
 ```bash
 sed -i.bak 's|127\.0\.0\.1|107.210.218.187|g' .env
 ```
 
-### Verify the replacement
+### 置換を確認
 
 ```bash
 grep -E 'MINIO_EXTERNAL_ADDRESS|GRAFANA_URL' .env
 ```
 
-### Quick smoke test
+### 動作確認
 
 ```bash
 docker compose up -d
 ```
 
-Open `http://<server-ip>:11002` in a browser (note: HTTP, not HTTPS). You should see the admin welcome page but login will fail for now.
+ブラウザで `http://<サーバーIP>:11002` (HTTP) を開き、管理画面のウェルカムページが表示されることを確認します (まだログイン不可)。
 
 ---
 
-## Step 4: Deploy LiveKit
+## 手順 4: LiveKit をデプロイ
 
 ```bash
 docker run --rm livekit/livekit-server generate-keys
 ```
 
-The command prints an API Key and API Secret. Run the commands below and replace `YOUR_KEY` with the API Key, `YOUR_SECRET` with the API Secret, and `YOUR_DOMAIN` with the calling-service domain.
+API Key / Secret が表示されるので、以下のコマンドで `YOUR_KEY` `YOUR_SECRET` `YOUR_DOMAIN` を実値に置き換えて設定します。
 
 ```bash
 export LIVEKIT_API_KEY=YOUR_KEY
@@ -111,15 +111,15 @@ export LIVEKIT_API_SECRET=YOUR_SECRET
 export LIVEKIT_DOMAIN=YOUR_DOMAIN
 ```
 
-### Edit `docker-compose.yaml`
+### `docker-compose.yaml` を編集
 
-In the `livekit - command` section change every `127.0.0.1` to the real server IP.
+`livekit - command` セクションの `127.0.0.1` をすべて実サーバー IP に変更します。
 
 ```bash
 nano docker-compose.yaml
 ```
 
-### Update `chat-rpc-chat.yml` (replace `API_KEY` / `API_SECRET` with real values)
+### `chat-rpc-chat.yml` を更新 (実際の `API_KEY` / `API_SECRET` を入力)
 
 ```bash
 sudo docker exec openim-chat sh -lc 'sed -i "s/^  key: ".*"$/  key: "API_KEY"/" /openim-chat/config/chat-rpc-chat.yml'
@@ -127,7 +127,7 @@ sudo docker exec openim-chat sh -lc 'sed -i "s/^  secret: ".*"$/  secret: "API_S
 sudo docker exec openim-chat sh -lc "grep -n 'key\|secret' /openim-chat/config/chat-rpc-chat.yml"
 ```
 
-### Append LiveKit settings to `.env`
+### `.env` に LiveKit 設定を追記
 
 ```bash
 cat <<EOF >> .env
@@ -139,21 +139,21 @@ LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET}
 EOF
 ```
 
-### Update `livekit.yaml`
+### `livekit.yaml` を更新
 
-Replace the TURN domain placeholder with your own domain (for example `livekit-turn.yourdomain.com`).
+TURN ドメインを自分のドメイン (例 `livekit-turn.yourdomain.com`) に置き換えます。
 
 ```bash
 sed -i 's/"livekit-turn.velora.velora.com"/"livekit-turn.yourdomain.yourdomain.com"/' livekit.yaml
 ```
 
-Replace `YOUR_KEY` and `YOUR_SECRET` with the API credentials you generated earlier.
+生成した `YOUR_KEY` / `YOUR_SECRET` を設定します。
 
 ```bash
 sed -i 's#  LK_API_KEY_REPLACE_ME_9f1c1f4b-3b6d-4a60-9b6a-8d2b4f6a6a77: LK_API_SECRET_REPLACE_ME_2a1e7b93-5b8f-4c6d-9a1e-77d2b0c41b12#  YOUR_KEY: YOUR_SECRET#' livekit.yaml
 ```
 
-### Validate LiveKit
+### LiveKit を確認
 
 ```bash
 curl -I http://127.0.0.1:7880
@@ -161,54 +161,54 @@ curl -I http://127.0.0.1:7880
 
 ---
 
-## Step 5: Configure Nginx
+## 手順 5: Nginx を設定
 
-### Install Nginx / Certbot
+### Nginx / Certbot をインストール
 
 ```bash
 sudo apt-get install -y nginx certbot python3-certbot-nginx
 sudo systemctl enable --now nginx
 ```
 
-### (Optional) stop unattended upgrades if apt is locked
+### (必要に応じて) unattended-upgrades を停止
 
 ```bash
 sudo systemctl stop unattended-upgrades
 ```
 
-### Stop Nginx and free port 80
+### ポート 80 を空けるため Nginx を停止
 
 ```bash
 sudo systemctl stop nginx
 ```
 
-### Issue certificates (replace domains and email)
+### 証明書を取得 (ドメイン・メールを置き換え)
 
 ```bash
-# Primary domain
+# メインドメイン
 sudo certbot certonly --standalone \
   -d velora.velora.com \
   -m your@email.com --agree-tos --no-eff-email
 
-# Admin domain
+# 管理ドメイン
 sudo certbot certonly --standalone \
   -d admin.velora.velora.com \
   -m your@email.com --agree-tos --no-eff-email
 
-# LiveKit domain
+# LiveKit ドメイン
 sudo certbot certonly --standalone \
   -d livekit.velora.velora.com \
   -m your@email.com --agree-tos --no-eff-email
 
-# LiveKit TURN domain
+# LiveKit TURN ドメイン
 sudo certbot certonly --standalone \
   -d livekit-turn.velora.velora.com \
   -m your@email.com --agree-tos --no-eff-email
 ```
 
-### Configure Nginx
+### Nginx 設定を投入
 
-Copy everything from `###########` to `###########`, paste into the terminal, and replace the sample domains/cert paths with yours.
+`###########` から `###########` までをターミナルに貼り付け、ドメインと証明書パスを実環境に合わせてください。
 
 ```
 ###########
@@ -382,13 +382,13 @@ EOF
 ###########
 ```
 
-### Test the config
+### 設定をテスト
 
 ```bash
 sudo nginx -t
 ```
 
-### (Optional) remove the default config
+### (任意) デフォルト設定を削除
 
 ```bash
 sudo rm /etc/nginx/sites-enabled/default
@@ -396,17 +396,17 @@ sudo rm /etc/nginx/sites-enabled/default
 
 ---
 
-## Step 6: Configure Minio
+## 手順 6: Minio を設定
 
-### Start Docker
+### Docker を起動
 
 ```bash
 docker compose up -d
 ```
 
-### Edit Minio configuration
+### Minio 設定を修正
 
-Replace `https://velora.velora.com` with your primary domain.
+`https://velora.velora.com` を自分のメインドメインに置換します。
 
 ```bash
 docker compose exec openim-server sh -lc "sed -i 's#^internalAddress:.*#internalAddress: minio:9000#; s#^externalAddress:.*#externalAddress: https://velora.velora.com/im-minio-api#' /openim-server/config/minio.yml && grep -nE 'internalAddress|externalAddress' /openim-server/config/minio.yml"
@@ -416,38 +416,38 @@ sed -i 's#^MINIO_EXTERNAL_ADDRESS=.*#MINIO_EXTERNAL_ADDRESS="https://velora.velo
 
 ---
 
-## Step 7: Start the system
+## 手順 7: システムを起動
 
-### Restart Docker
+### Docker を再起動
 
 ```bash
 docker compose down
 docker compose up -d
 ```
 
-### Start Nginx
+### Nginx を起動
 
 ```bash
 sudo systemctl restart nginx
 ```
 
-### Check Nginx status
+### Nginx の状態を確認
 
 ```bash
 sudo systemctl status nginx
 ```
 
-At this point you should be able to visit `https://admin.velora.velora.com` and see the admin welcome page. The default admin username/password is `chatAdmin`; change it immediately after logging in.
+`https://admin.velora.velora.com` にアクセスし、ウェルカムページが表示されることを確認します。初期の管理者アカウントは `chatAdmin` なので、ログイン後すぐパスワードを変更してください。
 
-## Important ⚠️⚠️⚠️
+## 注意 ⚠️⚠️⚠️
 
-### If voice/video calls fail, double-check the key/secret inside `chat-rpc-chat.yml`
+### 通話が接続できない場合は `chat-rpc-chat.yml` の key/secret を確認
 
 ```bash
 sudo docker exec openim-chat sh -lc "grep -n 'key\|secret' /openim-chat/config/chat-rpc-chat.yml"
 ```
 
-### If the values are outdated, replace them and restart the chat service
+### 値が最新でない場合は更新後にチャットサービスを再起動
 
 ```bash
 docker compose restart openim-chat

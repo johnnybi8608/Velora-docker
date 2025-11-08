@@ -2,45 +2,45 @@
 
 [English](README.md) | [Español](README.es.md) | [日本語](README.ja.md) | [简体中文](README.zh-CN.md) | [Português](README.pt.md)
 
-## Open Source Notice
+## Aviso de Código Abierto
 
-This project is developed on top of [OpenIM Server](https://github.com/openimsdk/open-im-server).
+Este proyecto se desarrolla sobre [OpenIM Server](https://github.com/openimsdk/open-im-server).
 
-- Upstream project: OpenIM Server
-- Upstream license: Apache License 2.0
-- Upstream repository: https://github.com/openimsdk/open-im-server
+- Proyecto original: OpenIM Server
+- Licencia original: Apache License 2.0
+- Repositorio original: https://github.com/openimsdk/open-im-server
 
-Thanks to the OpenIM team for their open-source contribution!
-
----
-
-## Deployment Guide
-
-Recommended server: Ubuntu 22.04 with at least 3.5 GB RAM.
-
-## Step 1: Prepare Domains
-
-- Primary domain: e.g., velora.velora.com
-- Admin console domain: e.g., admin.velora.velora.com
-- Calling service domain: e.g., livekit.velora.velora.com
-- Calling service TURN domain: e.g., livekit-turn.velora.velora.com
-
-If you deploy every component with this Docker stack, point all four domains to the same server IP.
-
-Prepare an extra domain for your web site (the compass icon inside the chat list opens it). Use the format `explore.<primary-domain>`, for example `explore.velora.velora.com`.
+¡Gracias al equipo de OpenIM por su contribución!
 
 ---
 
-## Step 2: Install Docker
+## Guía de Despliegue
 
-### Update the system & install dependencies
+Servidor recomendado: Ubuntu 22.04 con al menos 3.5 GB de RAM.
+
+## Paso 1: Preparar los dominios
+
+- Dominio principal: p. ej., velora.velora.com
+- Dominio del panel administrativo: p. ej., admin.velora.velora.com
+- Dominio del servicio de llamadas: p. ej., livekit.velora.velora.com
+- Dominio del servicio TURN de llamadas: p. ej., livekit-turn.velora.velora.com
+
+Si todo se ejecuta dentro de este stack de Docker, apunta los cuatro dominios a la misma IP del servidor.
+
+Prepara también un dominio adicional para tu sitio web (desde el icono de brújula en la app). Usa el formato `explore.<dominio-principal>`, por ejemplo `explore.velora.velora.com`.
+
+---
+
+## Paso 2: Instalar Docker
+
+### Actualizar el sistema e instalar dependencias
 
 ```bash
 sudo apt-get update
 sudo apt-get install -y ca-certificates curl gnupg lsb-release
 ```
 
-### Add the Docker official repository
+### Añadir el repositorio oficial de Docker
 
 ```bash
 sudo install -m 0755 -d /etc/apt/keyrings
@@ -52,14 +52,14 @@ https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_C
 | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 ```
 
-### Install Docker Engine + buildx + compose plugin
+### Instalar Docker Engine + buildx + plugin de compose
 
 ```bash
 sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
-### Verify
+### Verificar
 
 ```bash
 sudo docker --version
@@ -68,42 +68,42 @@ sudo docker compose version
 
 ---
 
-## Step 3: Clone the Velora repository
+## Paso 3: Clonar el repositorio de Velora
 
 ```bash
 git clone https://github.com/johnnybi8608/Velora-docker.git
 cd Velora-docker
 ```
 
-### Replace `127.0.0.1` in `.env` with the server public IP (for example `107.210.218.187`)
+### Sustituir `127.0.0.1` en `.env` por la IP pública del servidor (ej. `107.210.218.187`)
 
 ```bash
 sed -i.bak 's|127\.0\.0\.1|107.210.218.187|g' .env
 ```
 
-### Verify the replacement
+### Verificar el reemplazo
 
 ```bash
 grep -E 'MINIO_EXTERNAL_ADDRESS|GRAFANA_URL' .env
 ```
 
-### Quick smoke test
+### Prueba rápida
 
 ```bash
 docker compose up -d
 ```
 
-Open `http://<server-ip>:11002` in a browser (note: HTTP, not HTTPS). You should see the admin welcome page but login will fail for now.
+Abre `http://<ip-del-servidor>:11002` en el navegador (usa HTTP). Deberías ver la pantalla de bienvenida del panel, aunque todavía no podrás iniciar sesión.
 
 ---
 
-## Step 4: Deploy LiveKit
+## Paso 4: Desplegar LiveKit
 
 ```bash
 docker run --rm livekit/livekit-server generate-keys
 ```
 
-The command prints an API Key and API Secret. Run the commands below and replace `YOUR_KEY` with the API Key, `YOUR_SECRET` with the API Secret, and `YOUR_DOMAIN` with the calling-service domain.
+El comando devuelve una API Key y un API Secret. Ejecuta estas órdenes sustituyendo `YOUR_KEY`, `YOUR_SECRET` y `YOUR_DOMAIN` por tus propios valores.
 
 ```bash
 export LIVEKIT_API_KEY=YOUR_KEY
@@ -111,15 +111,15 @@ export LIVEKIT_API_SECRET=YOUR_SECRET
 export LIVEKIT_DOMAIN=YOUR_DOMAIN
 ```
 
-### Edit `docker-compose.yaml`
+### Editar `docker-compose.yaml`
 
-In the `livekit - command` section change every `127.0.0.1` to the real server IP.
+En la sección `livekit - command` cambia cada `127.0.0.1` por la IP real del servidor.
 
 ```bash
 nano docker-compose.yaml
 ```
 
-### Update `chat-rpc-chat.yml` (replace `API_KEY` / `API_SECRET` with real values)
+### Actualizar `chat-rpc-chat.yml` (reemplaza `API_KEY` / `API_SECRET` por los reales)
 
 ```bash
 sudo docker exec openim-chat sh -lc 'sed -i "s/^  key: ".*"$/  key: "API_KEY"/" /openim-chat/config/chat-rpc-chat.yml'
@@ -127,7 +127,7 @@ sudo docker exec openim-chat sh -lc 'sed -i "s/^  secret: ".*"$/  secret: "API_S
 sudo docker exec openim-chat sh -lc "grep -n 'key\|secret' /openim-chat/config/chat-rpc-chat.yml"
 ```
 
-### Append LiveKit settings to `.env`
+### Añadir la configuración de LiveKit a `.env`
 
 ```bash
 cat <<EOF >> .env
@@ -139,21 +139,21 @@ LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET}
 EOF
 ```
 
-### Update `livekit.yaml`
+### Actualizar `livekit.yaml`
 
-Replace the TURN domain placeholder with your own domain (for example `livekit-turn.yourdomain.com`).
+Cambia el dominio TURN por el tuyo (ej. `livekit-turn.tudominio.com`).
 
 ```bash
 sed -i 's/"livekit-turn.velora.velora.com"/"livekit-turn.yourdomain.yourdomain.com"/' livekit.yaml
 ```
 
-Replace `YOUR_KEY` and `YOUR_SECRET` with the API credentials you generated earlier.
+Reemplaza `YOUR_KEY` y `YOUR_SECRET` por las credenciales generadas.
 
 ```bash
 sed -i 's#  LK_API_KEY_REPLACE_ME_9f1c1f4b-3b6d-4a60-9b6a-8d2b4f6a6a77: LK_API_SECRET_REPLACE_ME_2a1e7b93-5b8f-4c6d-9a1e-77d2b0c41b12#  YOUR_KEY: YOUR_SECRET#' livekit.yaml
 ```
 
-### Validate LiveKit
+### Validar LiveKit
 
 ```bash
 curl -I http://127.0.0.1:7880
@@ -161,54 +161,54 @@ curl -I http://127.0.0.1:7880
 
 ---
 
-## Step 5: Configure Nginx
+## Paso 5: Configurar Nginx
 
-### Install Nginx / Certbot
+### Instalar Nginx / Certbot
 
 ```bash
 sudo apt-get install -y nginx certbot python3-certbot-nginx
 sudo systemctl enable --now nginx
 ```
 
-### (Optional) stop unattended upgrades if apt is locked
+### (Opcional) detener unattended-upgrades si apt está bloqueado
 
 ```bash
 sudo systemctl stop unattended-upgrades
 ```
 
-### Stop Nginx and free port 80
+### Detener Nginx para liberar el puerto 80
 
 ```bash
 sudo systemctl stop nginx
 ```
 
-### Issue certificates (replace domains and email)
+### Solicitar certificados (sustituye dominios y correo)
 
 ```bash
-# Primary domain
+# Dominio principal
 sudo certbot certonly --standalone \
   -d velora.velora.com \
   -m your@email.com --agree-tos --no-eff-email
 
-# Admin domain
+# Dominio del panel
 sudo certbot certonly --standalone \
   -d admin.velora.velora.com \
   -m your@email.com --agree-tos --no-eff-email
 
-# LiveKit domain
+# Dominio de LiveKit
 sudo certbot certonly --standalone \
   -d livekit.velora.velora.com \
   -m your@email.com --agree-tos --no-eff-email
 
-# LiveKit TURN domain
+# Dominio TURN de LiveKit
 sudo certbot certonly --standalone \
   -d livekit-turn.velora.velora.com \
   -m your@email.com --agree-tos --no-eff-email
 ```
 
-### Configure Nginx
+### Configurar Nginx
 
-Copy everything from `###########` to `###########`, paste into the terminal, and replace the sample domains/cert paths with yours.
+Copia el bloque entre `###########` y `###########`, pégalo en la terminal y reemplaza los valores por tus dominios/rutas reales.
 
 ```
 ###########
@@ -382,13 +382,13 @@ EOF
 ###########
 ```
 
-### Test the config
+### Probar la configuración
 
 ```bash
 sudo nginx -t
 ```
 
-### (Optional) remove the default config
+### (Opcional) eliminar el sitio por defecto
 
 ```bash
 sudo rm /etc/nginx/sites-enabled/default
@@ -396,17 +396,17 @@ sudo rm /etc/nginx/sites-enabled/default
 
 ---
 
-## Step 6: Configure Minio
+## Paso 6: Configurar Minio
 
-### Start Docker
+### Iniciar Docker
 
 ```bash
 docker compose up -d
 ```
 
-### Edit Minio configuration
+### Editar la configuración de Minio
 
-Replace `https://velora.velora.com` with your primary domain.
+Reemplaza `https://velora.velora.com` por tu dominio principal.
 
 ```bash
 docker compose exec openim-server sh -lc "sed -i 's#^internalAddress:.*#internalAddress: minio:9000#; s#^externalAddress:.*#externalAddress: https://velora.velora.com/im-minio-api#' /openim-server/config/minio.yml && grep -nE 'internalAddress|externalAddress' /openim-server/config/minio.yml"
@@ -416,38 +416,38 @@ sed -i 's#^MINIO_EXTERNAL_ADDRESS=.*#MINIO_EXTERNAL_ADDRESS="https://velora.velo
 
 ---
 
-## Step 7: Start the system
+## Paso 7: Iniciar el sistema
 
-### Restart Docker
+### Reiniciar Docker
 
 ```bash
 docker compose down
 docker compose up -d
 ```
 
-### Start Nginx
+### Iniciar Nginx
 
 ```bash
 sudo systemctl restart nginx
 ```
 
-### Check Nginx status
+### Revisar el estado de Nginx
 
 ```bash
 sudo systemctl status nginx
 ```
 
-At this point you should be able to visit `https://admin.velora.velora.com` and see the admin welcome page. The default admin username/password is `chatAdmin`; change it immediately after logging in.
+Ahora deberías poder visitar `https://admin.velora.velora.com` y ver la pantalla de bienvenida. El usuario y contraseña por defecto es `chatAdmin`; cámbialos inmediatamente.
 
-## Important ⚠️⚠️⚠️
+## Importante ⚠️⚠️⚠️
 
-### If voice/video calls fail, double-check the key/secret inside `chat-rpc-chat.yml`
+### Si las llamadas de voz/video fallan, revisa el key/secret dentro de `chat-rpc-chat.yml`
 
 ```bash
 sudo docker exec openim-chat sh -lc "grep -n 'key\|secret' /openim-chat/config/chat-rpc-chat.yml"
 ```
 
-### If the values are outdated, replace them and restart the chat service
+### Si los valores no son los últimos, actualízalos y reinicia el servicio de chat
 
 ```bash
 docker compose restart openim-chat
