@@ -443,3 +443,20 @@ sudo systemctl status nginx
 ```
 
 到这里, 浏览器输入 `https://admin.velora.velora.com` 预期可以看到后台欢迎页面。默认管理员账号密码均为 `chatAdmin`, 登录后请立即修改密码。
+
+## 注意⚠️⚠️⚠️
+
+### 如果语音视频通话无法接通,用以下命令着重检查chat-rpc-chat.yml文件里面的key和secret是否为最新的值
+
+```bash
+sudo docker exec openim-chat sh -lc "grep -n 'key\\|secret' /openim-chat/config/chat-rpc-chat.yml"
+```
+
+### 如果不是最新的值,替换之后
+
+```bash
+docker compose restart openim-chat
+```
+
+
+
