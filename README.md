@@ -117,11 +117,11 @@ export LIVEKIT_DOMAIN=YOUR_DOMAIN
 nano docker-compose.yaml
 ```
 
-### 替换 `chat-rpc-chat.yml` 里的内容
+### 替换 `chat-rpc-chat.yml` 里的内容, 注意替换API_KEY 和 API_SECRET为真实的值
 
 ```bash
-sudo docker exec openim-chat sh -lc 'sed -i "s/^  key: \".*\"$/  key: \"${CHATENV_CHAT_RPC_CHAT_LIVEKIT_APIKEY}\"/" /openim-chat/config/chat-rpc-chat.yml'
-sudo docker exec openim-chat sh -lc 'sed -i "s/^  secret: \".*\"$/  secret: \"${CHATENV_CHAT_RPC_CHAT_LIVEKIT_APISECRET}\"/" /openim-chat/config/chat-rpc-chat.yml'
+sudo docker exec openim-chat sh -lc 'sed -i "s/^  key: \".*\"$/  key: \"API_KEY\"/" /openim-chat/config/chat-rpc-chat.yml'
+sudo docker exec openim-chat sh -lc 'sed -i "s/^  secret: \".*\"$/  secret: \"API_SECRET\"/" /openim-chat/config/chat-rpc-chat.yml'
 sudo docker exec openim-chat sh -lc "grep -n 'key\\|secret' /openim-chat/config/chat-rpc-chat.yml"
 ```
 
@@ -149,6 +149,13 @@ sed -i 's/"livekit-turn.velora.velora.com"/"livekit-turn.yourdomain.yourdomain.c
 
 ```bash
 sed -i 's#  LK_API_KEY_REPLACE_ME_9f1c1f4b-3b6d-4a60-9b6a-8d2b4f6a6a77: LK_API_SECRET_REPLACE_ME_2a1e7b93-5b8f-4c6d-9a1e-77d2b0c41b12#  YOUR_KEY: YOUR_SECRET#' livekit.yaml
+```
+
+执行完上面命令用cat检查一下, 保证livekit.yaml结尾是以下格式:
+
+```bash
+keys:
+  YOUR_KEY:YOUR_SECRET
 ```
 
 ### 验证 LiveKit
