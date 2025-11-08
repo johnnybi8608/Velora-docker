@@ -1,7 +1,5 @@
 # Velora-docker
 
-[English](README.md) | [Español](README.es.md) | [日本語](README.ja.md) | [简体中文](README.zh-CN.md) | [Português](README.pt.md)
-
 ## 开源声明
 
 本项目基于 [OpenIM Server](https://github.com/openimsdk/open-im-server) 进行开发和修改。
@@ -459,5 +457,6 @@ sudo docker exec openim-chat sh -lc "grep -n 'key\\|secret' /openim-chat/config/
 ```bash
 docker compose restart openim-chat
 ```
+
 
 

@@ -122,9 +122,9 @@ nano docker-compose.yaml
 ### Update `chat-rpc-chat.yml` (replace `API_KEY` / `API_SECRET` with real values)
 
 ```bash
-sudo docker exec openim-chat sh -lc 'sed -i "s/^  key: ".*"$/  key: "API_KEY"/" /openim-chat/config/chat-rpc-chat.yml'
-sudo docker exec openim-chat sh -lc 'sed -i "s/^  secret: ".*"$/  secret: "API_SECRET"/" /openim-chat/config/chat-rpc-chat.yml'
-sudo docker exec openim-chat sh -lc "grep -n 'key\|secret' /openim-chat/config/chat-rpc-chat.yml"
+sudo docker exec openim-chat sh -lc 'sed -i "s/^  key: \".*\"$/  key: \"API_KEY\"/" /openim-chat/config/chat-rpc-chat.yml'
+sudo docker exec openim-chat sh -lc 'sed -i "s/^  secret: \".*\"$/  secret: \"API_SECRET\"/" /openim-chat/config/chat-rpc-chat.yml'
+sudo docker exec openim-chat sh -lc "grep -n 'key\\|secret' /openim-chat/config/chat-rpc-chat.yml"
 ```
 
 ### Append LiveKit settings to `.env`
@@ -151,6 +151,13 @@ Replace `YOUR_KEY` and `YOUR_SECRET` with the API credentials you generated earl
 
 ```bash
 sed -i 's#  LK_API_KEY_REPLACE_ME_9f1c1f4b-3b6d-4a60-9b6a-8d2b4f6a6a77: LK_API_SECRET_REPLACE_ME_2a1e7b93-5b8f-4c6d-9a1e-77d2b0c41b12#  YOUR_KEY: YOUR_SECRET#' livekit.yaml
+```
+
+After running the command, ensure the end of `livekit.yaml` looks like:
+
+```bash
+keys:
+  YOUR_KEY:YOUR_SECRET
 ```
 
 ### Validate LiveKit
@@ -235,7 +242,7 @@ server {
     gzip_buffers 4 16k;
     gzip_comp_level 2;
     gzip_types text/plain application/javascript text/css application/xml application/wasm;
-    gzip_disable "MSIE [1-6]\.";
+    gzip_disable "MSIE [1-6]\\.";
 
     location / {
         proxy_http_version 1.1;
@@ -299,7 +306,7 @@ server {
     gzip_buffers 4 16k;
     gzip_comp_level 2;
     gzip_types text/plain application/javascript text/css application/xml application/wasm;
-    gzip_disable "MSIE [1-6]\.";
+    gzip_disable "MSIE [1-6]\\.";
 
     location / {
         proxy_http_version 1.1;
@@ -409,7 +416,8 @@ docker compose up -d
 Replace `https://velora.velora.com` with your primary domain.
 
 ```bash
-docker compose exec openim-server sh -lc "sed -i 's#^internalAddress:.*#internalAddress: minio:9000#; s#^externalAddress:.*#externalAddress: https://velora.velora.com/im-minio-api#' /openim-server/config/minio.yml && grep -nE 'internalAddress|externalAddress' /openim-server/config/minio.yml"
+docker compose exec openim-server sh -lc \
+"sed -i 's#^internalAddress:.*#internalAddress: minio:9000#; s#^externalAddress:.*#externalAddress: https://velora.velora.com/im-minio-api#' /openim-server/config/minio.yml && grep -nE 'internalAddress|externalAddress' /openim-server/config/minio.yml"
 
 sed -i 's#^MINIO_EXTERNAL_ADDRESS=.*#MINIO_EXTERNAL_ADDRESS="https://velora.velora.com/im-minio-api"#' .env
 ```
@@ -444,7 +452,7 @@ At this point you should be able to visit `https://admin.velora.velora.com` and 
 ### If voice/video calls fail, double-check the key/secret inside `chat-rpc-chat.yml`
 
 ```bash
-sudo docker exec openim-chat sh -lc "grep -n 'key\|secret' /openim-chat/config/chat-rpc-chat.yml"
+sudo docker exec openim-chat sh -lc "grep -n 'key\\|secret' /openim-chat/config/chat-rpc-chat.yml"
 ```
 
 ### If the values are outdated, replace them and restart the chat service

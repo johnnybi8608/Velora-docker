@@ -122,9 +122,9 @@ nano docker-compose.yaml
 ### `chat-rpc-chat.yml` を更新 (実際の `API_KEY` / `API_SECRET` を入力)
 
 ```bash
-sudo docker exec openim-chat sh -lc 'sed -i "s/^  key: ".*"$/  key: "API_KEY"/" /openim-chat/config/chat-rpc-chat.yml'
-sudo docker exec openim-chat sh -lc 'sed -i "s/^  secret: ".*"$/  secret: "API_SECRET"/" /openim-chat/config/chat-rpc-chat.yml'
-sudo docker exec openim-chat sh -lc "grep -n 'key\|secret' /openim-chat/config/chat-rpc-chat.yml"
+sudo docker exec openim-chat sh -lc 'sed -i "s/^  key: \".*\"$/  key: \"API_KEY\"/" /openim-chat/config/chat-rpc-chat.yml'
+sudo docker exec openim-chat sh -lc 'sed -i "s/^  secret: \".*\"$/  secret: \"API_SECRET\"/" /openim-chat/config/chat-rpc-chat.yml'
+sudo docker exec openim-chat sh -lc "grep -n 'key\\|secret' /openim-chat/config/chat-rpc-chat.yml"
 ```
 
 ### `.env` に LiveKit 設定を追記
@@ -151,6 +151,13 @@ sed -i 's/"livekit-turn.velora.velora.com"/"livekit-turn.yourdomain.yourdomain.c
 
 ```bash
 sed -i 's#  LK_API_KEY_REPLACE_ME_9f1c1f4b-3b6d-4a60-9b6a-8d2b4f6a6a77: LK_API_SECRET_REPLACE_ME_2a1e7b93-5b8f-4c6d-9a1e-77d2b0c41b12#  YOUR_KEY: YOUR_SECRET#' livekit.yaml
+```
+
+`cat livekit.yaml` を実行し、ファイル末尾が次の形になっているか確認してください。
+
+```bash
+keys:
+  YOUR_KEY:YOUR_SECRET
 ```
 
 ### LiveKit を確認
@@ -235,7 +242,7 @@ server {
     gzip_buffers 4 16k;
     gzip_comp_level 2;
     gzip_types text/plain application/javascript text/css application/xml application/wasm;
-    gzip_disable "MSIE [1-6]\.";
+    gzip_disable "MSIE [1-6]\\.";
 
     location / {
         proxy_http_version 1.1;
@@ -299,7 +306,7 @@ server {
     gzip_buffers 4 16k;
     gzip_comp_level 2;
     gzip_types text/plain application/javascript text/css application/xml application/wasm;
-    gzip_disable "MSIE [1-6]\.";
+    gzip_disable "MSIE [1-6]\\.";
 
     location / {
         proxy_http_version 1.1;
@@ -409,7 +416,8 @@ docker compose up -d
 `https://velora.velora.com` を自分のメインドメインに置換します。
 
 ```bash
-docker compose exec openim-server sh -lc "sed -i 's#^internalAddress:.*#internalAddress: minio:9000#; s#^externalAddress:.*#externalAddress: https://velora.velora.com/im-minio-api#' /openim-server/config/minio.yml && grep -nE 'internalAddress|externalAddress' /openim-server/config/minio.yml"
+docker compose exec openim-server sh -lc \
+"sed -i 's#^internalAddress:.*#internalAddress: minio:9000#; s#^externalAddress:.*#externalAddress: https://velora.velora.com/im-minio-api#' /openim-server/config/minio.yml && grep -nE 'internalAddress|externalAddress' /openim-server/config/minio.yml"
 
 sed -i 's#^MINIO_EXTERNAL_ADDRESS=.*#MINIO_EXTERNAL_ADDRESS="https://velora.velora.com/im-minio-api"#' .env
 ```
@@ -444,7 +452,7 @@ sudo systemctl status nginx
 ### 通話が接続できない場合は `chat-rpc-chat.yml` の key/secret を確認
 
 ```bash
-sudo docker exec openim-chat sh -lc "grep -n 'key\|secret' /openim-chat/config/chat-rpc-chat.yml"
+sudo docker exec openim-chat sh -lc "grep -n 'key\\|secret' /openim-chat/config/chat-rpc-chat.yml"
 ```
 
 ### 値が最新でない場合は更新後にチャットサービスを再起動
