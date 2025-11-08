@@ -163,14 +163,14 @@ curl -I http://127.0.0.1:7880
 
 ### 安装 Nginx / Certbot
 
-如果报apt锁可以先停掉自动升级服务 
-```bash
-sudo systemctl stop unattended-upgrades
-```
-
 ```bash
 sudo apt-get install -y nginx certbot python3-certbot-nginx
 sudo systemctl enable --now nginx
+```
+
+### 如果报apt锁可以先停掉自动升级服务 (可选)
+```bash
+sudo systemctl stop unattended-upgrades
 ```
 
 ### 停掉 Nginx, 放行 80 端口
